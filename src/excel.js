@@ -1,87 +1,255 @@
 /**
  * src/excel.js
  *
- * Generates the DI-Error-Report Excel file using the `xlsx` (SheetJS) library.
- * Mirrors the Python create_excel() + add_hyperlinks_to_summary() functions.
- *
- * Note: SheetJS CE (the open-source edition) does not support hyperlink
- * formulas in cells.  The summary sheet therefore includes a plain "Go to →"
- * text reference instead of a clickable HYPERLINK() formula.  If you need
- * real hyperlinks you can swap to the commercial SheetJS Pro or use the
- * `exceljs` package.
+ * Generates Excel report with:
+ * - Error Summary sheet
+ * - Hyperlinks to each sheet
+ * - Header styling
+ * - Auto column sizing
  */
 
 'use strict';
 
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const path = require('path');
 
 /**
- * @param {Object} resultDict - key → array-of-row-objects
- * @param {string} outputDir  - folder to write the file into
- * @returns {Promise<string>} - absolute path of the generated xlsx
+ * @param {Object} resultDict
+ * @param {string} outputDir
+ * @returns {Promise<string>}
  */
 async function createExcel(resultDict, outputDir) {
-  const timestamp = new Date()
-    .toISOString()
-    .replace(/T/, '_')
-    .replace(/:/g, '')
-    .slice(0, 17);           // e.g. 2024-05-01_143022
-  const filename  = `DI-Error-Report-${timestamp}.xlsx`;
-  const filepath  = path.join(outputDir, filename);
 
-  const wb = XLSX.utils.book_new();
+    const timestamp = new Date()
+        .toISOString()
+        .replace(/T/, '_')
+        .replace(/:/g, '')
+        .slice(0,17);
 
-  // ── 1. Write each error-category sheet ──────────────────────────────────────
-  for (const [sheetName, data] of Object.entries(resultDict)) {
-    if (sheetName === 'Error Summary') continue; // written last
-    if (!Array.isArray(data) || data.length === 0) {
-      // Write an empty sheet so the file is complete
-      const ws = XLSX.utils.aoa_to_sheet([['No errors found']]);
-      XLSX.utils.book_append_sheet(wb, ws, safeName(sheetName));
-      continue;
+    const filename =
+        `DI-Error-Report-${timestamp}.xlsx`;
+
+    const filepath =
+        path.join(outputDir, filename);
+
+    const workbook =
+        new ExcelJS.Workbook();
+
+    workbook.creator = 'TDO Quality Analysis';
+
+    // ======================================================
+    // Create Summary Sheet
+    // ======================================================
+
+    const summarySheet =
+        workbook.addWorksheet('Error Summary');
+
+    summarySheet.columns = [
+        {
+            header:'Sheet Name',
+            key:'sheet',
+            width:40
+        },
+        {
+            header:'Error Count',
+            key:'count',
+            width:20
+        },
+        {
+            header:'Navigation',
+            key:'nav',
+            width:25
+        }
+    ];
+
+    // Header style
+    summarySheet.getRow(1).font = {
+        bold:true,
+        color:{argb:'FFFFFF'}
+    };
+
+    summarySheet.getRow(1).fill = {
+        type:'pattern',
+        pattern:'solid',
+        fgColor:{argb:'FF0000'}
+    };
+
+    summarySheet.getRow(1).alignment = {
+        horizontal:'center'
+    };
+
+    let summaryRowNo=2;
+
+    // ======================================================
+    // Detail sheets
+    // ======================================================
+
+    for(const [sheetName,data]
+        of Object.entries(resultDict)) {
+
+        if(sheetName==='Error Summary')
+            continue;
+
+        const safeSheetName =
+            safeName(sheetName);
+
+        const ws =
+            workbook.addWorksheet(
+                safeSheetName
+            );
+
+        // No data
+        if(
+            !Array.isArray(data)
+            || data.length===0
+        ){
+
+            ws.addRow(['No errors found']);
+
+        } else {
+
+            const headers =
+                Object.keys(data[0]);
+
+            ws.columns =
+                headers.map(h=>({
+                    header:h,
+                    key:h,
+                    width:25
+                }));
+
+            data.forEach(row=>{
+                ws.addRow(row);
+            });
+
+            // Header style
+            ws.getRow(1).font={
+                bold:true,
+                color:{argb:'FFFFFF'}
+            };
+
+            ws.getRow(1).fill={
+                type:'pattern',
+                pattern:'solid',
+                fgColor:{argb:'FF0000'}
+            };
+
+            ws.getRow(1).alignment={
+                horizontal:'center'
+            };
+
+            // Auto width
+            ws.columns.forEach(column=>{
+
+                let maxLength=15;
+
+                column.eachCell(
+                    {includeEmpty:true},
+                    cell=>{
+
+                    const length=
+                    cell.value
+                    ? cell.value
+                        .toString()
+                        .length
+                    : 10;
+
+                    if(length>maxLength)
+                        maxLength=length;
+
+                });
+
+                column.width =
+                    Math.min(
+                        maxLength+2,
+                        50
+                    );
+
+            });
+        }
+
+        // ========================================
+        // Summary row
+        // ========================================
+
+        const errorCount =
+            Array.isArray(data)
+            ? data.length
+            : 0;
+
+        summarySheet.addRow({
+            sheet:safeSheetName,
+            count:errorCount,
+            nav:'Open Sheet'
+        });
+
+        // Hyperlink
+        const hyperlinkCell =
+            summarySheet.getCell(
+                `C${summaryRowNo}`
+            );
+
+        hyperlinkCell.value = {
+            text:'Open',
+            hyperlink:
+            `#'${safeSheetName}'!A1`
+        };
+
+        hyperlinkCell.font = {
+            color:{argb:'0000FF'},
+            underline:true
+        };
+
+        summaryRowNo++;
     }
-    const ws = XLSX.utils.json_to_sheet(data);
-    applyHeaderStyle(ws);
-    XLSX.utils.book_append_sheet(wb, ws, safeName(sheetName));
-  }
 
-  // ── 2. Build the Error Summary sheet ────────────────────────────────────────
-  const summaryRows = [['Sheet Name', 'Error Count', 'Navigation']];
-  for (const [sheetName, data] of Object.entries(resultDict)) {
-    if (sheetName === 'Error Summary') continue;
-    const count = Array.isArray(data) ? data.length : 0;
-    summaryRows.push([sheetName, count, `→ ${safeName(sheetName)}`]);
-  }
-  const summaryWs = XLSX.utils.aoa_to_sheet(summaryRows);
-  applyHeaderStyle(summaryWs);
-  XLSX.utils.book_append_sheet(wb, summaryWs, 'Error Summary');
+    // Auto width summary columns
+    summarySheet.columns.forEach(
+        column=>{
 
-  // ── 3. Write file ────────────────────────────────────────────────────────────
-  XLSX.writeFile(wb, filepath);
-  return filepath;
-}
+        let maxLength=15;
 
-/** Truncate sheet names to 31 chars and strip illegal characters */
-function safeName(name) {
-  return name.replace(/[\\/?:*"<>|]/g, '_').slice(0, 31);
+        column.eachCell(
+            {includeEmpty:true},
+            cell=>{
+
+            const length=
+            cell.value
+            ? cell.value
+                .toString()
+                .length
+            : 10;
+
+            if(length>maxLength)
+                maxLength=length;
+
+        });
+
+        column.width=
+            Math.min(
+                maxLength+2,
+                40
+            );
+
+    });
+
+    await workbook.xlsx.writeFile(
+        filepath
+    );
+
+    return filepath;
 }
 
 /**
- * Apply a basic header style (bold + coloured fill) to row 1.
- * SheetJS CE supports limited cell-level formatting via !cols / !rows.
+ * Safe Excel sheet name
  */
-function applyHeaderStyle(ws) {
-  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-  for (let C = range.s.c; C <= range.e.c; C++) {
-    const cellAddr = XLSX.utils.encode_cell({ r: 0, c: C });
-    if (!ws[cellAddr]) continue;
-    ws[cellAddr].s = {
-      font:    { bold: true, color: { rgb: 'FF0000' } },
-      fill:    { fgColor: { rgb: 'FFCCCC' } },
-      alignment: { horizontal: 'center' },
-    };
-  }
+function safeName(name){
+
+    return name
+        .replace(/[\\/?*[\]:]/g,'_')
+        .slice(0,31);
 }
 
-module.exports = { createExcel };
+module.exports = {
+    createExcel
+};
