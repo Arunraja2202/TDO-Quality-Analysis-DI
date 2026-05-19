@@ -400,17 +400,50 @@ function query_irt_requires_mg_local_code(rows) {
   });
 }
 
-/** Verification Date older than yesterday */
+/** Verification Date validation (YYYYMMDD format) */
 function query_invalid_verification_date(rows) {
-  requireCols(rows, REQUIRED_COLS);
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  yesterday.setHours(0,0,0,0);
+    requireCols(rows, REQUIRED_COLS);
 
-  return rows.filter(r => {
-    const d = new Date(val(r, 'Verification Date'));
-    return !isNaN(d.getTime()) && d < yesterday;
-  });
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    return rows.filter(r => {
+
+        const dateStr = String(val(r,'Verification Date')).trim();
+
+        // Skip blank values
+        if (!dateStr || dateStr.length !== 8) {
+            return true;
+        }
+
+        // Parse YYYYMMDD
+        const year = parseInt(dateStr.substring(0,4));
+        const month = parseInt(dateStr.substring(4,6)) - 1;
+        const day = parseInt(dateStr.substring(6,8));
+
+        const verificationDate =
+            new Date(year, month, day);
+
+        verificationDate.setHours(0,0,0,0);
+
+        // Invalid date format
+        if (isNaN(verificationDate.getTime())) {
+            return true;
+        }
+
+        // Allow only yesterday, today, tomorrow
+        return !(
+            verificationDate.getTime() === yesterday.getTime() ||
+            verificationDate.getTime() === today.getTime() ||
+            verificationDate.getTime() === tomorrow.getTime()
+        );
+    });
 }
 
 /** Exception code check vs allowed MG names */
