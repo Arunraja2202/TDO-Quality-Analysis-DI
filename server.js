@@ -12,6 +12,7 @@ const path    = require('path');
 const fs      = require('fs');
 const XLSX    = require('xlsx');
 const Papa    = require('papaparse');
+const os = require('os');
 
 const { processCSV } = require('./src/queries');
 const { createExcel } = require('./src/excel');
@@ -20,17 +21,25 @@ const app  = express();
 const PORT = process.env.PORT || 8080;
 
 // ── Folders ────────────────────────────────────────────────────────────────────
-const UPLOAD_FOLDER = path.join(__dirname, 'Downloads');
-if (!fs.existsSync(UPLOAD_FOLDER)) fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
+// ── Folders ─────────────────────────────────────────────────────
+const os = require('os');
 
-// ── Static files (mirrors Flask /static) ──────────────────────────────────────
+const UPLOAD_FOLDER = path.join(os.tmpdir(), 'uploads');
+
+if (!fs.existsSync(UPLOAD_FOLDER)) {
+    fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
+}
+
+// ── Static files ───────────────────────────────────────────────
 app.use('/static', express.static(path.join(__dirname, 'public', 'static')));
 
-// ── Multer – file upload ───────────────────────────────────────────────────────
+// ── Multer upload ──────────────────────────────────────────────
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_FOLDER),
-  filename:    (req, file, cb) => cb(null, file.originalname),
+    destination: (req, file, cb) => cb(null, UPLOAD_FOLDER),
+    filename: (req, file, cb) =>
+        cb(null, `${Date.now()}-${file.originalname}`)
 });
+
 const upload = multer({ storage });
 
 // ── Routes ─────────────────────────────────────────────────────────────────────
