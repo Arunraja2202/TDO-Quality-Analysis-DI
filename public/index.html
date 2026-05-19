@@ -6,7 +6,7 @@
     <title>TDO Quality Analysis</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <!-- Favicon: place your Favicon.png inside public/static/images/ -->
-    <link rel="icon" href="/static/images/TDo.ico" type="image/png">
+    <link rel="icon" href="/static/images/Favicon.png" type="image/png">
 
     <style>
         body, html {
@@ -506,10 +506,14 @@ document.addEventListener('keydown', (e) => {
 
                         summaryTableBody.innerHTML = '';
                         for (let key in result.detailed_errors_html) {
-                            const errorCountMatch = result.detailed_errors_html[key].match(/<tr>/g) || [];
-                            let errorCount = errorCountMatch.length;
 
-                            errorCount = errorCount > 0 ? Math.floor(errorCount) : '-';
+    const errorCountMatch =
+        result.detailed_errors_html[key].match(/<tr>/g) || [];
+
+    // Remove header row count
+    let errorCount = Math.max(0, errorCountMatch.length - 1);
+
+    errorCount = errorCount > 0 ? errorCount : '-';
 
                             const row = document.createElement('tr');
                             const categoryCell = document.createElement('td');
