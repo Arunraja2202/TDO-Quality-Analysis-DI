@@ -17,7 +17,6 @@ const os = require('os');
 const { processCSV } = require('./src/queries');
 const { createExcel } = require('./src/excel');
 
-const express = require('express');
 const compression = require('compression');
 
 const app = express();
