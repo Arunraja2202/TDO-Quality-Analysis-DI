@@ -175,6 +175,14 @@ app.get('/health', (req,res)=>{
 
 });
 // ─// ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`TDO Quality Analysis running at http://127.0.0.1:${PORT}`);
+app.get('/health', (req,res)=>{
+    res.send('OK');
+});
+
+app.listen(PORT,'0.0.0.0',()=>{
+
+    console.log(
+        `Server running on port ${PORT}`
+    );
+
 });
