@@ -17,7 +17,12 @@ const os = require('os');
 const { processCSV } = require('./src/queries');
 const { createExcel } = require('./src/excel');
 
-const app  = express();
+const express = require('express');
+const compression = require('compression');
+
+const app = express();
+
+app.use(compression());
 const PORT = process.env.PORT || 8080;
 
 // ── Folders ────────────────────────────────────────────────────────────────────
@@ -31,7 +36,16 @@ if (!fs.existsSync(UPLOAD_FOLDER)) {
 }
 
 // ── Static files ───────────────────────────────────────────────
-app.use('/static', express.static(path.join(__dirname, 'public', 'static')));
+app.use(
+    '/static',
+    express.static(
+        path.join(__dirname,'public','static'),
+        {
+            maxAge:'7d',
+            etag:true
+        }
+    )
+);
 
 // ── Multer upload ──────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -155,7 +169,12 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────────
+app.get('/health', (req,res)=>{
+
+    res.status(200).send('OK');
+
+});
+// ─// ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`TDO Quality Analysis running at http://127.0.0.1:${PORT}`);
 });
