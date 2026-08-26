@@ -461,7 +461,7 @@ function check_empty_phone(rows) {
   const excludedCh = ['[09] Unknown Retailers','[59] Unknown On-Premise','[13] Fulfillment'];
   return rows.filter(r =>
     isEmpty(r['Phone']) &&
-    ['[OP] Open, Operating','[FO] Future Opening'].includes(val(r, 'Status')) &&
+    ['[OP] Open, Operating'].includes(val(r, 'Status')) &&
     !excludedCh.includes(val(r, 'Local Trade Channel'))
   );
 }
