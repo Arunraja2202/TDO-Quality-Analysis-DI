@@ -143,6 +143,18 @@ function normalizeMGName(name) {
 const normalizedMGList = new Set(
     MG_List.map(normalizeMGName)
 );
+function extractMGBaseName(name) {
+    name = normalizeMGName(name);
+
+    if (!name) {
+        return '';
+    }
+
+    // Remove everything starting from -, /, #, |
+    return name
+        .split(/\s+[-\/|#]\s*|\s+[-\/|#]/)[0]
+        .trim();
+}
 const MG_Banner_Set = new Set(
     MG_List.map(normalizeMGName)
 );
@@ -717,7 +729,7 @@ function check_null_mg(rows) {
   requireCols(rows, REQUIRED_COLS);
 
   return rows.filter(r => {
-    const name = normalizeMGName(r['Name']);
+    const name = extractMGBaseName(r['Name']);
     const mgName = val(r, 'MG Name');
 
     // MG Name must be empty
