@@ -299,6 +299,27 @@
             background-color:#ff6666;
             color: black;
         }
+        #image-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            object-position: center;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Optional dark overlay for better text readability */
+        .background-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 20, 70, 0.18);
+            z-index: -1;
+            pointer-events: none;
+        }
+
 
         #search-box {
             padding: 10px;
@@ -358,12 +379,13 @@
     </style>
 </head>
 <body>
-    <div class="overlay"></div>
-    <!-- Place your Earth.mp4 inside public/static/video/ -->
-    <video id="video-background" autoplay muted loop playsinline preload="metadata">
-        <source src="/static/video/Earth.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <img
+        id="image-background"
+        src="/static/images/TDO1.png"
+        alt=""
+        aria-hidden="true"
+    >
+    <div class="background-overlay"></div>
 
     <!-- All zoomable content goes inside this div -->
     <div class="zoomable-content" id="zoomable-content">
