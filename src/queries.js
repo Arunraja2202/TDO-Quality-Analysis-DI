@@ -195,7 +195,7 @@ const REQUIRED_COLS = [
   'ReplacedBy Status','ReplacedBy Name','ReplacedBy Address',
   'ReplacedBy Trade Channel','ReplacedBy Local Sub Channel','Status',
   'Status Date','MG Local Code','MG Name','Beer','Wine','Liquor',
-  'Modelled ACV Code','Clinic ','Clinic Name','Assistance Program',
+  'Modelled ACV Code','Clinic','Clinic Name','Assistance Program',
   'Food Type','Pharmacy','Gas','Verification Date','Verification Source',
   'Grocery Supplier Number','Grocery Supplier verification Source',
   'Grocery Supplier verification Date','Confection Supplier Number',
