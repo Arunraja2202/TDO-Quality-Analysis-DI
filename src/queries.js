@@ -140,34 +140,27 @@ function normalizeMGName(value) {
 }
 
 
-// Create normalized MG list once
-const MG_Banner_List = MG_List
-  .map(item => ({
-    original: String(item || '').trim(),
-    banner: normalizeMGName(item)
-  }))
-  .filter(item => item.banner !== '');
-
-
-// Extract the actual matching banner from Name
+// Find and EXTRACT the matching banner from Name
 function extractMatchedBanner(name) {
-  const normalizedName = normalizeMGName(name);
+  const originalName = String(name || '').trim();
+  const normalizedName = originalName.toLowerCase();
 
-  // Longest banner first to avoid partial matches
-  const sortedList = [...MG_Banner_List].sort(
-    (a, b) => b.banner.length - a.banner.length
-  );
+  const banners = MG_List
+    .map(item => normalizeMGName(item))
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
 
-  for (const item of sortedList) {
-    if (normalizedName.includes(item.banner)) {
-      return {
-        matchedBanner: item.banner,
-        mgListValue: item.original
-      };
+  for (const banner of banners) {
+    const index = normalizedName.indexOf(banner);
+
+    if (index !== -1) {
+      // Extract the actual matching text from Name
+      return originalName.substring(index, index + banner.length);
     }
   }
 
-  return null;
+  return '';
+
 }
 /** True when value is null, undefined, or blank string */
 function isEmpty(v) {
@@ -741,28 +734,18 @@ function check_null_mg(rows) {
 
   return rows
     .filter(r => {
-      const name = val(r, 'Name');
-      const mgName = val(r, 'MG Name');
-
-      // Only check records where MG Name is empty
-      if (!isEmpty(mgName)) {
+      // MG Name must be empty
+      if (!isEmpty(r['MG Name'])) {
         return false;
       }
 
-      // Check Name against MG_List
-      return extractMatchedBanner(name) !== null;
+      // Name must contain a banner from MG_List
+      return extractMatchedBanner(r['Name']) !== '';
     })
-    .map(r => {
-      const match = extractMatchedBanner(val(r, 'Name'));
-
-      return {
-        ...r,
-
-        'Matched Banner': match ? match.matchedBanner : '',
-        'MG List Value': match ? match.mgListValue : '',
-        'MG Name': val(r, 'MG Name') || ''
-      };
-    });
+    .map(r => ({
+      ...r,
+      'Matched Banner': extractMatchedBanner(r['Name'])
+    }));
 }
 
 // ── Main Orchestrator ─────────────────────────────────────────────────────────
