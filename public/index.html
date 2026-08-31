@@ -16,16 +16,23 @@
             -ms-user-select: text !important;
             overflow-x: hidden;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #fffdd0; 
-            color: #333;
-            min-height: 100vh;
-            font-weight: bold;
-            position: relative;
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+
+    background-image: url('/static/images/1TDO.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: #001a5c;
+    background-attachment: fixed;
+
+    color: #333;
+    min-height: 100vh;
+    font-weight: bold;
+    position: relative;
+}
 
         #video-background {
             position: fixed;
@@ -299,18 +306,21 @@
             background-color:#ff6666;
             color: black;
         }
-        #image-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            object-position: center;
-            z-index: -1;
-            pointer-events: none;
-        }
+#image-background {
+    position: fixed;
+    inset: 0;
 
+    width: 100vw;
+    height: 100vh;
+
+    object-fit: contain;
+    object-position: center center;
+
+    background-color: #001a5c;
+
+    z-index: -2;
+    pointer-events: none;
+}
         /* Optional dark overlay for better text readability */
         .background-overlay {
             position: fixed;
@@ -379,13 +389,7 @@
     </style>
 </head>
 <body>
-    <img
-        id="image-background"
-        src="/static/images/1TDO.png"
-        alt=""
-        aria-hidden="true"
-    >
-    <div class="background-overlay"></div>
+
 
     <!-- All zoomable content goes inside this div -->
     <div class="zoomable-content" id="zoomable-content">
