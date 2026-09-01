@@ -1,10 +1,10 @@
 {
   "name": "tdo-quality-analysis",
   "version": "1.0.0",
-  "description": "TDO Quality Analysis - Flask to Node.js/Express conversion",
+  "description": "TDO Quality Analysis",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --max-old-space-size=512 server.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {
