@@ -1,663 +1,84 @@
-// // /**
-// //  * src/excel.js
-// //  *
-// //  * Generates Excel report with:
-// //  * - Error Summary sheet
-// //  * - Hyperlinks to each sheet
-// //  * - Header styling
-// //  * - Auto column sizing
-// //  */
-
-// // 'use strict';
-
-// // const ExcelJS = require('exceljs');
-// // const path = require('path');
-
-// // /**
-// //  * @param {Object} resultDict
-// //  * @param {string} outputDir
-// //  * @returns {Promise<string>}
-// //  */
-// // async function createExcel(resultDict, outputDir) {
-
-// //     const timestamp = new Date()
-// //         .toISOString()
-// //         .replace(/T/, '_')
-// //         .replace(/:/g, '')
-// //         .slice(0,17);
-
-// //     const filename =
-// //         `DI-Error-Report-${timestamp}.xlsx`;
-
-// //     const filepath =
-// //         path.join(outputDir, filename);
-
-// //     const workbook =
-// //         new ExcelJS.Workbook();
-
-// //     workbook.creator = 'TDO Quality Analysis';
-
-// //     // ======================================================
-// //     // Create Summary Sheet
-// //     // ======================================================
-
-// //     const summarySheet =
-// //         workbook.addWorksheet('Error Summary');
-
-// //     summarySheet.columns = [
-// //         {
-// //             header:'Sheet Name',
-// //             key:'sheet',
-// //             width:40
-// //         },
-// //         {
-// //             header:'Error Count',
-// //             key:'count',
-// //             width:20
-// //         },
-// //         {
-// //             header:'Navigation',
-// //             key:'nav',
-// //             width:25
-// //         }
-// //     ];
-
-// //     // Header style
-// //     summarySheet.getRow(1).font = {
-// //         bold:true,
-// //         color:{argb:'FFFFFF'}
-// //     };
-
-// //     summarySheet.getRow(1).fill = {
-// //         type:'pattern',
-// //         pattern:'solid',
-// //         fgColor:{argb:'FF0000'}
-// //     };
-
-// //     summarySheet.getRow(1).alignment = {
-// //         horizontal:'center'
-// //     };
-
-// //     let summaryRowNo=2;
-
-// //     // ======================================================
-// //     // Detail sheets
-// //     // ======================================================
-
-// //     for(const [sheetName,data]
-// //         of Object.entries(resultDict)) {
-
-// //         if(sheetName==='Error Summary')
-// //             continue;
-
-// //         const safeSheetName =
-// //             safeName(sheetName);
-
-// //         const ws =
-// //             workbook.addWorksheet(
-// //                 safeSheetName
-// //             );
-
-// //         // No data
-// //         if(
-// //             !Array.isArray(data)
-// //             || data.length===0
-// //         ){
-
-// //             ws.addRow(['No errors found']);
-
-// //         } else {
-
-// //             const headers =
-// //                 Object.keys(data[0]);
-
-// //             ws.columns =
-// //                 headers.map(h=>({
-// //                     header:h,
-// //                     key:h,
-// //                     width:25
-// //                 }));
-
-// //             data.forEach(row=>{
-// //                 ws.addRow(row);
-// //             });
-
-// //             // Header style
-// //             ws.getRow(1).font={
-// //                 bold:true,
-// //                 color:{argb:'FFFFFF'}
-// //             };
-
-// //             ws.getRow(1).fill={
-// //                 type:'pattern',
-// //                 pattern:'solid',
-// //                 fgColor:{argb:'FF0000'}
-// //             };
-
-// //             ws.getRow(1).alignment={
-// //                 horizontal:'center'
-// //             };
-
-// //             // Auto width
-// //             ws.columns.forEach(column=>{
-
-// //                 let maxLength=15;
-
-// //                 column.eachCell(
-// //                     {includeEmpty:true},
-// //                     cell=>{
-
-// //                     const length=
-// //                     cell.value
-// //                     ? cell.value
-// //                         .toString()
-// //                         .length
-// //                     : 10;
-
-// //                     if(length>maxLength)
-// //                         maxLength=length;
-
-// //                 });
-
-// //                 column.width =
-// //                     Math.min(
-// //                         maxLength+2,
-// //                         50
-// //                     );
-
-// //             });
-// //         }
-
-// //         // ========================================
-// //         // Summary row
-// //         // ========================================
-
-// //         const errorCount =
-// //             Array.isArray(data)
-// //             ? data.length
-// //             : 0;
-
-// //         summarySheet.addRow({
-// //             sheet:safeSheetName,
-// //             count:errorCount,
-// //             nav:'Open Sheet'
-// //         });
-
-// //         // Hyperlink
-// //         const hyperlinkCell =
-// //             summarySheet.getCell(
-// //                 `C${summaryRowNo}`
-// //             );
-
-// //         hyperlinkCell.value = {
-// //             text:'Open',
-// //             hyperlink:
-// //             `#'${safeSheetName}'!A1`
-// //         };
-
-// //         hyperlinkCell.font = {
-// //             color:{argb:'0000FF'},
-// //             underline:true
-// //         };
-
-// //         summaryRowNo++;
-// //     }
-
-// //     // Auto width summary columns
-// //     summarySheet.columns.forEach(
-// //         column=>{
-
-// //         let maxLength=15;
-
-// //         column.eachCell(
-// //             {includeEmpty:true},
-// //             cell=>{
-
-// //             const length=
-// //             cell.value
-// //             ? cell.value
-// //                 .toString()
-// //                 .length
-// //             : 10;
-
-// //             if(length>maxLength)
-// //                 maxLength=length;
-
-// //         });
-
-// //         column.width=
-// //             Math.min(
-// //                 maxLength+2,
-// //                 40
-// //             );
-
-// //     });
-
-// //     await workbook.xlsx.writeFile(
-// //         filepath
-// //     );
-
-// //     return filepath;
-// // }
-
-// // /**
-// //  * Safe Excel sheet name
-// //  */
-// // function safeName(name){
-
-// //     return name
-// //         .replace(/[\\/?*[\]:]/g,'_')
-// //         .slice(0,31);
-// // }
-
-// // module.exports = {
-// //     createExcel
-// // };
-// /**
-//  * src/excel.js
-//  *
-//  * Optimized Excel report generator
-//  *
-//  * - Error Summary sheet
-//  * - Hyperlinks to detail sheets
-//  * - Header styling
-//  * - Faster column width calculation
-//  * - Avoids scanning ExcelJS cells after insertion
-//  */
-
-// 'use strict';
-
-// const ExcelJS = require('exceljs');
-// const path = require('path');
-
-// async function createExcel(resultDict, outputDir) {
-
-//     const timestamp = new Date()
-//         .toISOString()
-//         .replace(/T/, '_')
-//         .replace(/:/g, '')
-//         .slice(0, 17);
-
-//     const filename =
-//         `DI-Error-Report-${timestamp}.xlsx`;
-
-//     const filepath =
-//         path.join(outputDir, filename);
-
-//     const workbook =
-//         new ExcelJS.Workbook();
-
-//     workbook.creator =
-//         'TDO Quality Analysis';
-
-//     workbook.created =
-//         new Date();
-
-//     // =========================================================
-//     // Common header style
-//     // =========================================================
-
-//     const headerFont = {
-//         bold: true,
-//         color: {
-//             argb: 'FFFFFF'
-//         }
-//     };
-
-//     const headerFill = {
-//         type: 'pattern',
-//         pattern: 'solid',
-//         fgColor: {
-//             argb: 'FF0000'
-//         }
-//     };
-
-//     const headerAlignment = {
-//         horizontal: 'center'
-//     };
-
-//     // =========================================================
-//     // Summary Sheet
-//     // =========================================================
-
-//     const summarySheet =
-//         workbook.addWorksheet('Error Summary');
-
-//     summarySheet.columns = [
-//         {
-//             header: 'Sheet Name',
-//             key: 'sheet',
-//             width: 40
-//         },
-//         {
-//             header: 'Error Count',
-//             key: 'count',
-//             width: 20
-//         },
-//         {
-//             header: 'Navigation',
-//             key: 'nav',
-//             width: 25
-//         }
-//     ];
-
-//     const summaryHeader =
-//         summarySheet.getRow(1);
-
-//     summaryHeader.font =
-//         headerFont;
-
-//     summaryHeader.fill =
-//         headerFill;
-
-//     summaryHeader.alignment =
-//         headerAlignment;
-
-//     // =========================================================
-//     // Detail Sheets
-//     // =========================================================
-
-//     let summaryRowNo = 2;
-
-//     for (
-//         const [sheetName, data]
-//         of Object.entries(resultDict)
-//     ) {
-
-//         if (sheetName === 'Error Summary') {
-//             continue;
-//         }
-
-//         const safeSheetName =
-//             safeName(sheetName);
-
-//         const ws =
-//             workbook.addWorksheet(
-//                 safeSheetName
-//             );
-
-//         const errorCount =
-//             Array.isArray(data)
-//                 ? data.length
-//                 : 0;
-
-//         // =====================================================
-//         // No errors
-//         // =====================================================
-
-//         if (
-//             !Array.isArray(data) ||
-//             data.length === 0
-//         ) {
-
-//             ws.addRow([
-//                 'No errors found'
-//             ]);
-
-//             ws.getColumn(1).width = 25;
-
-//         }
-
-//         // =====================================================
-//         // Errors exist
-//         // =====================================================
-
-//         else {
-
-//             const headers =
-//                 Object.keys(data[0]);
-
-//             // -------------------------------------------------
-//             // Calculate column widths BEFORE creating cells
-//             // -------------------------------------------------
-
-//             const widths =
-//                 headers.map(
-//                     () => 15
-//                 );
-
-//             // Header lengths
-//             headers.forEach(
-//                 (header, index) => {
-
-//                     widths[index] =
-//                         Math.max(
-//                             widths[index],
-//                             String(header).length + 2
-//                         );
-
-//                 }
-//             );
-
-//             // Calculate widths from source data.
-//             //
-//             // IMPORTANT:
-//             // We don't inspect ExcelJS cells afterward.
-//             //
-//             for (const row of data) {
-
-//                 for (
-//                     let i = 0;
-//                     i < headers.length;
-//                     i++
-//                 ) {
-
-//                     const value =
-//                         row[headers[i]];
-
-//                     if (
-//                         value === null ||
-//                         value === undefined ||
-//                         value === ''
-//                     ) {
-//                         continue;
-//                     }
-
-//                     const length =
-//                         String(value).length;
-
-//                     if (
-//                         length + 2 >
-//                         widths[i]
-//                     ) {
-
-//                         widths[i] =
-//                             length + 2;
-
-//                     }
-
-//                 }
-
-//             }
-
-//             // Maximum width
-//             for (
-//                 let i = 0;
-//                 i < widths.length;
-//                 i++
-//             ) {
-
-//                 widths[i] =
-//                     Math.min(
-//                         widths[i],
-//                         50
-//                     );
-
-//             }
-
-//             // -------------------------------------------------
-//             // Create columns
-//             // -------------------------------------------------
-
-//             ws.columns =
-//                 headers.map(
-//                     (header, index) => ({
-//                         header: header,
-//                         key: header,
-//                         width: widths[index]
-//                     })
-//                 );
-
-//             // -------------------------------------------------
-//             // Header styling
-//             // -------------------------------------------------
-
-//             const headerRow =
-//                 ws.getRow(1);
-
-//             headerRow.font =
-//                 headerFont;
-
-//             headerRow.fill =
-//                 headerFill;
-
-//             headerRow.alignment =
-//                 headerAlignment;
-
-//             // -------------------------------------------------
-//             // Add rows
-//             // -------------------------------------------------
-
-//             //
-//             // addRows() is faster than repeatedly calling
-//             // addRow() for many records.
-//             //
-
-//             ws.addRows(data);
-
-//         }
-
-//         // =====================================================
-//         // Summary
-//         // =====================================================
-
-//         summarySheet.addRow({
-//             sheet: safeSheetName,
-//             count: errorCount,
-//             nav: 'Open Sheet'
-//         });
-
-//         const hyperlinkCell =
-//             summarySheet.getCell(
-//                 `C${summaryRowNo}`
-//             );
-
-//         hyperlinkCell.value = {
-//             text: 'Open',
-//             hyperlink:
-//                 `#'${safeSheetName}'!A1`
-//         };
-
-//         hyperlinkCell.font = {
-//             color: {
-//                 argb: '0000FF'
-//             },
-//             underline: true
-//         };
-
-//         summaryRowNo++;
-
-//     }
-
-//     // =========================================================
-//     // Summary column widths
-//     // =========================================================
-
-//     summarySheet.getColumn(1).width = 40;
-//     summarySheet.getColumn(2).width = 20;
-//     summarySheet.getColumn(3).width = 25;
-
-//     // =========================================================
-//     // Freeze headers
-//     // =========================================================
-
-//     for (
-//         const worksheet
-//         of workbook.worksheets
-//     ) {
-
-//         worksheet.views = [
-//             {
-//                 state: 'frozen',
-//                 ySplit: 1
-//             }
-//         ];
-
-//     }
-
-//     // =========================================================
-//     // Write Excel
-//     // =========================================================
-
-//     await workbook.xlsx.writeFile(
-//         filepath
-//     );
-
-//     return filepath;
-// }
-
-
-// // =============================================================
-// // Safe Excel sheet name
-// // =============================================================
-
-// function safeName(name) {
-
-//     let safe =
-//         String(name)
-//             .replace(
-//                 /[\\/?*[\]:]/g,
-//                 '_'
-//             )
-//             .trim();
-
-//     if (!safe) {
-//         safe = 'Sheet';
-//     }
-
-//     return safe.slice(0, 31);
-// }
-
-
-// module.exports = {
-//     createExcel
-// };
-
 /**
  * src/excel.js
  *
- * Optimized streaming Excel generator.
+ * Streaming Excel report generator
  *
- * Features:
- * - Error Summary sheet
- * - Hyperlinks to detail sheets
- * - Header styling
- * - Streaming rows
- * - Lower memory usage
- * - No expensive eachCell() auto-width scan
+ * Excel is generated ONLY when user clicks Download.
  */
 
 'use strict';
 
-const ExcelJS = require('exceljs');
-const path = require('path');
+const ExcelJS =
+    require('exceljs');
+
+const path =
+    require('path');
+
+const fs =
+    require('fs');
 
 
 // ============================================================
 // CREATE EXCEL
 // ============================================================
 
-async function createExcel(resultDict, outputDir) {
+async function createExcel(
+    resultDict,
+    outputDir
+) {
+
+    // ========================================================
+    // Ensure output folder exists
+    // ========================================================
+
+    if (
+        !fs.existsSync(
+            outputDir
+        )
+    ) {
+
+        fs.mkdirSync(
+            outputDir,
+            {
+                recursive: true
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // Filename
+    // ========================================================
+
+    const now =
+        new Date();
+
 
     const timestamp =
-        new Date()
+        now
             .toISOString()
-            .replace(/T/, '_')
-            .replace(/:/g, '')
-            .slice(0, 17);
+            .replace(
+                /T/,
+                '_'
+            )
+            .replace(
+                /:/g,
+                ''
+            )
+            .replace(
+                /\./g,
+                ''
+            )
+            .replace(
+                /Z/g,
+                ''
+            );
+
 
     const filename =
         `DI-Error-Report-${timestamp}.xlsx`;
+
 
     const filepath =
         path.join(
@@ -666,19 +87,22 @@ async function createExcel(resultDict, outputDir) {
         );
 
 
-    // =========================================================
-    // STREAMING WORKBOOK
-    // =========================================================
+    // ========================================================
+    // Streaming Workbook
+    // ========================================================
 
     const workbook =
         new ExcelJS.stream.xlsx.WorkbookWriter({
 
-            filename: filepath,
+            filename:
+                filepath,
 
-            useStyles: true,
+            useStyles:
+                true,
 
-            // Do not keep shared strings in memory
-            useSharedStrings: false
+            // Lower memory usage
+            useSharedStrings:
+                false
 
         });
 
@@ -686,20 +110,25 @@ async function createExcel(resultDict, outputDir) {
     workbook.creator =
         'TDO Quality Analysis';
 
+
     workbook.created =
-        new Date();
+        now;
 
 
-    // =========================================================
-    // COMMON HEADER STYLE
-    // =========================================================
+    // ========================================================
+    // Styles
+    // ========================================================
 
     const headerFont = {
 
-        bold: true,
+        bold:
+            true,
 
         color: {
-            argb: 'FFFFFF'
+
+            argb:
+                'FFFFFFFF'
+
         }
 
     };
@@ -707,12 +136,17 @@ async function createExcel(resultDict, outputDir) {
 
     const headerFill = {
 
-        type: 'pattern',
+        type:
+            'pattern',
 
-        pattern: 'solid',
+        pattern:
+            'solid',
 
         fgColor: {
-            argb: 'FF0000'
+
+            argb:
+                'FFFF0000'
+
         }
 
     };
@@ -720,16 +154,18 @@ async function createExcel(resultDict, outputDir) {
 
     const headerAlignment = {
 
-        horizontal: 'center',
+        horizontal:
+            'center',
 
-        vertical: 'middle'
+        vertical:
+            'middle'
 
     };
 
 
-    // =========================================================
-    // SUMMARY SHEET
-    // =========================================================
+    // ========================================================
+    // ERROR SUMMARY
+    // ========================================================
 
     const summarySheet =
         workbook.addWorksheet(
@@ -740,39 +176,64 @@ async function createExcel(resultDict, outputDir) {
     summarySheet.columns = [
 
         {
-            header: 'Sheet Name',
-            key: 'sheet',
-            width: 40
+
+            header:
+                'Sheet Name',
+
+            key:
+                'sheet',
+
+            width:
+                40
+
         },
 
         {
-            header: 'Error Count',
-            key: 'count',
-            width: 20
+
+            header:
+                'Error Count',
+
+            key:
+                'count',
+
+            width:
+                20
+
         },
 
         {
-            header: 'Navigation',
-            key: 'nav',
-            width: 25
+
+            header:
+                'Navigation',
+
+            key:
+                'nav',
+
+            width:
+                25
+
         }
 
     ];
 
 
-    // =========================================================
-    // SUMMARY HEADER
-    // =========================================================
+    // ========================================================
+    // Summary header
+    // ========================================================
 
     const summaryHeader =
-        summarySheet.getRow(1);
+        summarySheet.getRow(
+            1
+        );
 
 
     summaryHeader.font =
         headerFont;
 
+
     summaryHeader.fill =
         headerFill;
+
 
     summaryHeader.alignment =
         headerAlignment;
@@ -781,9 +242,9 @@ async function createExcel(resultDict, outputDir) {
     summaryHeader.commit();
 
 
-    // =========================================================
-    // DETAIL SHEETS
-    // =========================================================
+    // ========================================================
+    // Detail sheets
+    // ========================================================
 
     for (
         const [
@@ -795,7 +256,6 @@ async function createExcel(resultDict, outputDir) {
         )
     ) {
 
-        // Skip Error Summary
         if (
             sheetName ===
             'Error Summary'
@@ -806,17 +266,13 @@ async function createExcel(resultDict, outputDir) {
         }
 
 
-        // =====================================================
-        // Safe sheet name
-        // =====================================================
-
         const safeSheetName =
             safeName(
                 sheetName
             );
 
 
-        const ws =
+        const worksheet =
             workbook.addWorksheet(
                 safeSheetName
             );
@@ -828,57 +284,69 @@ async function createExcel(resultDict, outputDir) {
                 : 0;
 
 
-        // =====================================================
-        // NO DATA
-        // =====================================================
+        // ====================================================
+        // NO ERRORS
+        // ====================================================
 
         if (
             !Array.isArray(data) ||
             data.length === 0
         ) {
 
-            ws.columns = [
+            worksheet.columns = [
 
                 {
-                    header: 'Result',
-                    key: 'result',
-                    width: 25
+
+                    header:
+                        'Result',
+
+                    key:
+                        'result',
+
+                    width:
+                        25
+
                 }
 
             ];
 
 
-            // Header
-            const headerRow =
-                ws.getRow(1);
+            const header =
+                worksheet.getRow(
+                    1
+                );
 
 
-            headerRow.font =
+            header.font =
                 headerFont;
 
-            headerRow.fill =
+
+            header.fill =
                 headerFill;
 
-            headerRow.alignment =
+
+            header.alignment =
                 headerAlignment;
 
 
-            headerRow.commit();
+            header.commit();
 
 
-            // Data
-            ws.addRow({
+            worksheet
+                .addRow({
 
-                result:
-                    'No errors found'
+                    result:
+                        'No errors found'
 
-            }).commit();
+                })
+                .commit();
 
         }
 
-        // =====================================================
-        // DATA EXISTS
-        // =====================================================
+
+        // ====================================================
+        // ERRORS EXIST
+        // ====================================================
 
         else {
 
@@ -889,25 +357,119 @@ async function createExcel(resultDict, outputDir) {
 
 
             // =================================================
-            // Create columns
+            // Determine practical column widths
+            //
+            // Only inspect first 100 rows.
+            // This is much faster than scanning everything.
             // =================================================
 
-            ws.columns =
-                headers.map(
-                    header => ({
+            const sampleSize =
+                Math.min(
+                    data.length,
+                    100
+                );
 
-                        header:
-                            header,
+
+            const widths =
+                headers.map(
+
+                    header =>
+                        Math.max(
+                            15,
+                            String(header).length + 2
+                        )
+
+                );
+
+
+            for (
+                let rowIndex = 0;
+                rowIndex < sampleSize;
+                rowIndex++
+            ) {
+
+                const row =
+                    data[rowIndex];
+
+
+                for (
+                    let columnIndex = 0;
+                    columnIndex < headers.length;
+                    columnIndex++
+                ) {
+
+                    const header =
+                        headers[
+                            columnIndex
+                        ];
+
+
+                    const value =
+                        row[header];
+
+
+                    if (
+                        value === null ||
+                        value === undefined
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    const length =
+                        String(value)
+                            .length + 2;
+
+
+                    widths[
+                        columnIndex
+                    ] =
+                        Math.min(
+
+                            Math.max(
+
+                                widths[
+                                    columnIndex
+                                ],
+
+                                length
+
+                            ),
+
+                            50
+
+                        );
+
+                }
+
+            }
+
+
+            // =================================================
+            // Columns
+            // =================================================
+
+            worksheet.columns =
+
+                headers.map(
+
+                    (
+                        header,
+                        index
+                    ) => ({
+
+                        header,
 
                         key:
                             header,
 
-                        // Fixed width is intentional.
-                        // It avoids scanning every cell.
                         width:
-                            25
+                            widths[index]
 
                     })
+
                 );
 
 
@@ -915,25 +477,29 @@ async function createExcel(resultDict, outputDir) {
             // Header styling
             // =================================================
 
-            const headerRow =
-                ws.getRow(1);
+            const header =
+                worksheet.getRow(
+                    1
+                );
 
 
-            headerRow.font =
+            header.font =
                 headerFont;
 
-            headerRow.fill =
+
+            header.fill =
                 headerFill;
 
-            headerRow.alignment =
+
+            header.alignment =
                 headerAlignment;
 
 
-            headerRow.commit();
+            header.commit();
 
 
             // =================================================
-            // Stream rows
+            // STREAM DATA ROWS
             // =================================================
 
             for (
@@ -941,18 +507,20 @@ async function createExcel(resultDict, outputDir) {
                 of data
             ) {
 
-                ws.addRow(
-                    row
-                ).commit();
+                worksheet
+                    .addRow(
+                        row
+                    )
+                    .commit();
 
             }
 
         }
 
 
-        // =====================================================
+        // ====================================================
         // SUMMARY ROW
-        // =====================================================
+        // ====================================================
 
         const summaryRow =
             summarySheet.addRow({
@@ -969,12 +537,14 @@ async function createExcel(resultDict, outputDir) {
             });
 
 
-        // =====================================================
+        // ====================================================
         // HYPERLINK
-        // =====================================================
+        // ====================================================
 
         const hyperlinkCell =
-            summaryRow.getCell(3);
+            summaryRow.getCell(
+                3
+            );
 
 
         hyperlinkCell.value = {
@@ -991,39 +561,50 @@ async function createExcel(resultDict, outputDir) {
         hyperlinkCell.font = {
 
             color: {
-                argb: '0000FF'
+
+                argb:
+                    'FF0000FF'
+
             },
 
-            underline: true
+            underline:
+                true
 
         };
 
 
         summaryRow.commit();
 
+
+        // ====================================================
+        // Commit worksheet
+        // ====================================================
+
+        worksheet.commit();
+
     }
 
 
-    // =========================================================
+    // ========================================================
     // Commit Summary
-    // =========================================================
+    // ========================================================
 
     summarySheet.commit();
 
 
-    // =========================================================
-    // Finalize XLSX
-    // =========================================================
+    // ========================================================
+    // Commit Workbook
+    // ========================================================
 
     await workbook.commit();
 
 
-    // =========================================================
-    // Verify file exists
-    // =========================================================
+    // ========================================================
+    // Verify Excel
+    // ========================================================
 
     if (
-        !require('fs').existsSync(
+        !fs.existsSync(
             filepath
         )
     ) {
@@ -1035,6 +616,36 @@ async function createExcel(resultDict, outputDir) {
     }
 
 
+    const stat =
+        fs.statSync(
+            filepath
+        );
+
+
+    if (
+        stat.size === 0
+    ) {
+
+        throw new Error(
+            'Generated Excel file is empty.'
+        );
+
+    }
+
+
+    console.log(
+
+        `Excel ready: ${filepath} | ` +
+
+        `${(
+            stat.size /
+            1024 /
+            1024
+        ).toFixed(2)} MB`
+
+    );
+
+
     return filepath;
 
 }
@@ -1044,14 +655,18 @@ async function createExcel(resultDict, outputDir) {
 // SAFE SHEET NAME
 // ============================================================
 
-function safeName(name) {
+function safeName(
+    name
+) {
 
     let safe =
         String(name)
+
             .replace(
                 /[\\/?*[\]:]/g,
                 '_'
             )
+
             .trim();
 
 
@@ -1072,5 +687,7 @@ function safeName(name) {
 
 
 module.exports = {
+
     createExcel
+
 };

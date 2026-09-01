@@ -1,783 +1,29 @@
-// // /**
-// //  * TDO Quality Analysis - Node.js/Express Server
-// //  * Converted from Flask (Models_AR.py)
-// //  *
-// //  * Run:  npm install && npm start
-// //  * Visit: http://localhost:8080
-// //  */
-
-// // const express = require('express');
-// // const multer  = require('multer');
-// // const path    = require('path');
-// // const fs      = require('fs');
-// // const XLSX    = require('xlsx');
-// // const Papa    = require('papaparse');
-// // const os = require('os');
-
-// // const { processCSV } = require('./src/queries');
-// // const { createExcel } = require('./src/excel');
-
-// // const compression = require('compression');
-
-// // const app = express();
-
-// // app.use(compression());
-// // const PORT = process.env.PORT || 8080;
-
-// // // ── Folders ────────────────────────────────────────────────────────────────────
-// // // ── Folders ─────────────────────────────────────────────────────
-
-
-// // const UPLOAD_FOLDER = path.join(os.tmpdir(), 'uploads');
-
-// // if (!fs.existsSync(UPLOAD_FOLDER)) {
-// //     fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
-// // }
-
-// // // ── Static files ───────────────────────────────────────────────
-// // app.use(
-// //     '/static',
-// //     express.static(
-// //         path.join(__dirname,'public','static'),
-// //         {
-// //             maxAge:'7d',
-// //             etag:true
-// //         }
-// //     )
-// // );
-
-// // // ── Multer upload ──────────────────────────────────────────────
-// // const storage = multer.diskStorage({
-// //     destination: (req, file, cb) => cb(null, UPLOAD_FOLDER),
-// //     filename: (req, file, cb) =>
-// //         cb(null, `${Date.now()}-${file.originalname}`)
-// // });
-
-// // const upload = multer({ storage });
-
-// // // ── Routes ─────────────────────────────────────────────────────────────────────
-
-// // // GET /  →  serve index.html
-// // app.get('/', (req, res) => {
-// //   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-// // });
-
-// // // POST /upload  →  process CSV, return JSON (same contract as Flask)
-// // app.post('/upload', upload.single('file'), async (req, res) => {
-// //   if (!req.file) {
-// //     return res.status(400).json({ error: 'No file provided' });
-// //   }
-
-// //   const filepath = req.file.path;
-
-// //   try {
-// //     // Read & parse CSV
-// //     const csvText = fs.readFileSync(filepath, 'utf-8');
-// //     const parsed  = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-// //     const rows    = parsed.data; // array of objects keyed by column header
-
-// //     // Run all validation queries (Python logic → JS)
-// //     const resultDict = processCSV(rows);
-
-// //     // Build Excel report
-// //     const excelFilename = await createExcel(resultDict, UPLOAD_FOLDER);
-
-// //     // Build response payload (mirrors Flask JSON response exactly)
-// //     const detailedErrorsHtml  = {};
-// //     const detailedErrorsCount = {};
-
-// //     for (const [key, df] of Object.entries(resultDict)) {
-// //       if (key === 'Error Summary') continue;
-// //       if (Array.isArray(df) && df.length > 0) {
-// //         detailedErrorsHtml[key]  = arrayToHtmlTable(df);
-// //         detailedErrorsCount[key] = df.length;
-// //       }
-// //     }
-
-// //     const summaryHtml = summaryToHtmlTable(resultDict);
-
-// //     // Clean up uploaded file
-// //     fs.unlinkSync(filepath);
-
-// //     return res.json({
-// //       table_html:            summaryHtml,
-// //       detailed_errors_html:  detailedErrorsHtml,
-// //       detailed_errors_count: detailedErrorsCount,
-// //       excel_filename:        path.basename(excelFilename),
-// //     });
-
-// //   } catch (err) {
-// //     if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
-// //     console.error(err);
-
-// //     if (err.message && err.message.includes('Missing column')) {
-// //       return res.status(400).json({ error: err.message });
-// //     }
-// //     return res.status(500).json({ error: `Processing error: ${err.message}` });
-// //   }
-// // });
-
-// // // GET /download/:filename  →  serve the generated Excel file
-// // app.get('/download/:filename', (req, res) => {
-// //   const filePath = path.join(UPLOAD_FOLDER, req.params.filename);
-// //   if (!fs.existsSync(filePath)) {
-// //     return res.status(404).json({ error: 'Kindly refresh the URL & reupload the file.' });
-// //   }
-// //   res.download(filePath);
-// // });
-
-// // // ── Helpers ───────────────────────────────────────────────────────────────────
-
-// // /**
-// //  * Convert an array of row-objects to an HTML <table> string.
-// //  * Mirrors pandas DataFrame.to_html(index=False).
-// //  */
-// // function arrayToHtmlTable(rows) {
-// //   if (!rows || rows.length === 0) return '<table><tbody></tbody></table>';
-// //   const headers = Object.keys(rows[0]);
-// //   let html = '<table border="1" class="dataframe">\n<thead><tr>';
-// //   html += headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
-// //   html += '</tr></thead>\n<tbody>\n';
-// //   for (const row of rows) {
-// //     html += '<tr>';
-// //     html += headers.map(h => `<td>${escapeHtml(String(row[h] ?? ''))}</td>`).join('');
-// //     html += '</tr>\n';
-// //   }
-// //   html += '</tbody>\n</table>';
-// //   return html;
-// // }
-
-// // /**
-// //  * Build the Error Summary HTML table from resultDict.
-// //  */
-// // function summaryToHtmlTable(resultDict) {
-// //   const rows = [];
-// //   for (const [key, df] of Object.entries(resultDict)) {
-// //     if (key === 'Error Summary') continue;
-// //     const count = Array.isArray(df) ? df.length : 0;
-// //     rows.push({ 'Sheet Name': key, 'Error Count': count });
-// //   }
-// //   return arrayToHtmlTable(rows);
-// // }
-
-// // function escapeHtml(str) {
-// //   return str
-// //     .replace(/&/g, '&amp;')
-// //     .replace(/</g, '&lt;')
-// //     .replace(/>/g, '&gt;')
-// //     .replace(/"/g, '&quot;');
-// // }
-
-// // app.get('/health', (req,res)=>{
-
-// //     res.status(200).send('OK');
-
-// // });
-// // // ─// ── Start ─────────────────────────────────────────────────────────────────────
-// // app.get('/health', (req,res)=>{
-// //     res.send('OK');
-// // });
-
-// // app.listen(PORT,'0.0.0.0',()=>{
-
-// //     console.log(
-// //         `Server running on port ${PORT}`
-// //     );
-
-// // });
-// /**
-//  * TDO Quality Analysis - Node.js/Express Server
-//  *
-//  * Run:
-//  *   npm install
-//  *   npm start
-//  *
-//  * Visit:
-//  *   http://localhost:8080
-//  */
-
-// const express = require('express');
-// const multer = require('multer');
-// const path = require('path');
-// const fs = require('fs');
-// const Papa = require('papaparse');
-// const os = require('os');
-// const compression = require('compression');
-
-// const { processCSV } = require('./src/queries');
-// const { createExcel } = require('./src/excel');
-
-// const app = express();
-
-// app.use(compression());
-
-// const PORT = process.env.PORT || 8080;
-
-// // ─────────────────────────────────────────────────────────────
-// // Folders
-// // ─────────────────────────────────────────────────────────────
-
-// const UPLOAD_FOLDER = path.join(os.tmpdir(), 'uploads');
-
-// if (!fs.existsSync(UPLOAD_FOLDER)) {
-//     fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
-// }
-
-// // ─────────────────────────────────────────────────────────────
-// // Static files
-// // ─────────────────────────────────────────────────────────────
-
-// app.use(
-//     '/static',
-//     express.static(
-//         path.join(__dirname, 'public', 'static'),
-//         {
-//             maxAge: '7d',
-//             etag: true
-//         }
-//     )
-// );
-
-// // ─────────────────────────────────────────────────────────────
-// // Multer upload
-// // ─────────────────────────────────────────────────────────────
-
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         cb(null, UPLOAD_FOLDER);
-//     },
-
-//     filename: (req, file, cb) => {
-//         const safeName = path.basename(file.originalname);
-
-//         cb(
-//             null,
-//             `${Date.now()}-${safeName}`
-//         );
-//     }
-// });
-
-// // Limit upload size.
-// // Adjust if your files are larger.
-// const upload = multer({
-//     storage,
-
-//     limits: {
-//         fileSize: 100 * 1024 * 1024 // 100 MB
-//     }
-// });
-
-// // ─────────────────────────────────────────────────────────────
-// // GET /
-// // ─────────────────────────────────────────────────────────────
-
-// app.get('/', (req, res) => {
-
-//     res.sendFile(
-//         path.join(__dirname, 'public', 'index.html')
-//     );
-
-// });
-
-// // ─────────────────────────────────────────────────────────────
-// // Memory logger
-// // ─────────────────────────────────────────────────────────────
-
-// function logMemory(label) {
-
-//     const memory = process.memoryUsage();
-
-//     console.log(
-//         `[MEMORY] ${label} | ` +
-//         `RSS: ${(memory.rss / 1024 / 1024).toFixed(2)} MB | ` +
-//         `Heap Used: ${(memory.heapUsed / 1024 / 1024).toFixed(2)} MB | ` +
-//         `Heap Total: ${(memory.heapTotal / 1024 / 1024).toFixed(2)} MB | ` +
-//         `External: ${(memory.external / 1024 / 1024).toFixed(2)} MB`
-//     );
-
-// }
-
-// // ─────────────────────────────────────────────────────────────
-// // POST /upload
-// // ─────────────────────────────────────────────────────────────
-
-// app.post(
-//     '/upload',
-//     upload.single('file'),
-
-//     async (req, res) => {
-
-//         if (!req.file) {
-
-//             return res.status(400).json({
-//                 error: 'No file provided'
-//             });
-
-//         }
-
-//         const filepath = req.file.path;
-
-//         logMemory('Upload received');
-
-//         try {
-
-//             // ─────────────────────────────────────────────
-//             // Read CSV
-//             // ─────────────────────────────────────────────
-
-//             const csvText = fs.readFileSync(
-//                 filepath,
-//                 'utf-8'
-//             );
-
-//             console.log(
-//                 `CSV size: ${(Buffer.byteLength(csvText, 'utf8') / 1024 / 1024).toFixed(2)} MB`
-//             );
-
-//             logMemory('After reading CSV');
-
-//             // ─────────────────────────────────────────────
-//             // Parse CSV
-//             // ─────────────────────────────────────────────
-
-//             const parsed = Papa.parse(
-//                 csvText,
-//                 {
-//                     header: true,
-//                     skipEmptyLines: true
-//                 }
-//             );
-
-//             if (parsed.errors && parsed.errors.length > 0) {
-
-//                 console.warn(
-//                     `CSV parsing returned ${parsed.errors.length} errors`
-//                 );
-
-//             }
-
-//             const rows = parsed.data;
-
-//             console.log(
-//                 `CSV rows: ${rows.length}`
-//             );
-
-//             logMemory('After CSV parsing');
-
-//             // The CSV string is no longer needed.
-//             // This removes our reference to it.
-//             //
-//             // NOTE:
-//             // JavaScript may not immediately release the memory.
-//             //
-//             // We intentionally do not keep `parsed`.
-
-//             // ─────────────────────────────────────────────
-//             // Process validation
-//             // ─────────────────────────────────────────────
-
-//             const resultDict = processCSV(rows);
-
-//             console.log(
-//                 'Validation completed'
-//             );
-
-//             logMemory('After processCSV');
-
-//             // `rows` is no longer needed after processCSV.
-//             // Setting it to null helps garbage collection
-//             // when processing large files.
-//             //
-//             // We declared it with const above, so instead
-//             // we rely on scope ending after this request.
-//             //
-//             // The resultDict is now the main object.
-
-//             // ─────────────────────────────────────────────
-//             // Create Excel
-//             // ─────────────────────────────────────────────
-
-//             const excelFilename = await createExcel(
-//                 resultDict,
-//                 UPLOAD_FOLDER
-//             );
-
-//             console.log(
-//                 `Excel created: ${excelFilename}`
-//             );
-
-//             logMemory('After createExcel');
-
-//             // ─────────────────────────────────────────────
-//             // Build response
-//             // ─────────────────────────────────────────────
-
-//             const detailedErrorsHtml = {};
-//             const detailedErrorsCount = {};
-
-//             for (
-//                 const [key, df]
-//                 of Object.entries(resultDict)
-//             ) {
-
-//                 if (key === 'Error Summary') {
-//                     continue;
-//                 }
-
-//                 if (
-//                     Array.isArray(df) &&
-//                     df.length > 0
-//                 ) {
-
-//                     console.log(
-//                         `Building HTML for ${key}: ${df.length} rows`
-//                     );
-
-//                     detailedErrorsHtml[key] =
-//                         arrayToHtmlTable(df);
-
-//                     detailedErrorsCount[key] =
-//                         df.length;
-//                 }
-
-//             }
-
-//             logMemory(
-//                 'After building detailed HTML'
-//             );
-
-//             // ─────────────────────────────────────────────
-//             // Summary
-//             // ─────────────────────────────────────────────
-
-//             const summaryHtml =
-//                 summaryToHtmlTable(resultDict);
-
-//             // ─────────────────────────────────────────────
-//             // Remove uploaded CSV
-//             // ─────────────────────────────────────────────
-
-//             safeDelete(filepath);
-
-//             logMemory('Before response');
-
-//             // ─────────────────────────────────────────────
-//             // Response
-//             // ─────────────────────────────────────────────
-
-//             return res.json({
-
-//                 table_html: summaryHtml,
-
-//                 detailed_errors_html:
-//                     detailedErrorsHtml,
-
-//                 detailed_errors_count:
-//                     detailedErrorsCount,
-
-//                 excel_filename:
-//                     path.basename(excelFilename)
-
-//             });
-
-//         } catch (err) {
-
-//             safeDelete(filepath);
-
-//             console.error(
-//                 'Processing error:',
-//                 err
-//             );
-
-//             if (
-//                 err.message &&
-//                 err.message.includes('Missing column')
-//             ) {
-
-//                 return res.status(400).json({
-//                     error: err.message
-//                 });
-
-//             }
-
-//             return res.status(500).json({
-//                 error:
-//                     `Processing error: ${err.message}`
-//             });
-
-//         }
-
-//     }
-// );
-
-// // ─────────────────────────────────────────────────────────────
-// // Download Excel
-// // ─────────────────────────────────────────────────────────────
-
-// app.get(
-//     '/download/:filename',
-//     (req, res) => {
-
-//         const filename =
-//             path.basename(req.params.filename);
-
-//         const filePath =
-//             path.join(
-//                 UPLOAD_FOLDER,
-//                 filename
-//             );
-
-//         if (!fs.existsSync(filePath)) {
-
-//             return res.status(404).json({
-//                 error:
-//                     'Kindly refresh the URL & reupload the file.'
-//             });
-
-//         }
-
-//         res.download(filePath);
-
-//     }
-// );
-
-// // ─────────────────────────────────────────────────────────────
-// // Helpers
-// // ─────────────────────────────────────────────────────────────
-
-// function safeDelete(filepath) {
-
-//     try {
-
-//         if (
-//             filepath &&
-//             fs.existsSync(filepath)
-//         ) {
-
-//             fs.unlinkSync(filepath);
-
-//         }
-
-//     } catch (err) {
-
-//         console.error(
-//             'Failed to delete file:',
-//             err.message
-//         );
-
-//     }
-
-// }
-
-// // ─────────────────────────────────────────────────────────────
-// // HTML Table
-// // ─────────────────────────────────────────────────────────────
-
-// function arrayToHtmlTable(rows) {
-
-//     if (
-//         !rows ||
-//         rows.length === 0
-//     ) {
-
-//         return '<table><tbody></tbody></table>';
-
-//     }
-
-//     const headers =
-//         Object.keys(rows[0]);
-
-//     let html =
-//         '<table border="1" class="dataframe">\n' +
-//         '<thead><tr>';
-
-//     html += headers
-//         .map(
-//             h =>
-//                 `<th>${escapeHtml(h)}</th>`
-//         )
-//         .join('');
-
-//     html +=
-//         '</tr></thead>\n<tbody>\n';
-
-//     for (const row of rows) {
-
-//         html += '<tr>';
-
-//         html += headers
-//             .map(
-//                 h =>
-//                     `<td>${escapeHtml(
-//                         String(row[h] ?? '')
-//                     )}</td>`
-//             )
-//             .join('');
-
-//         html += '</tr>\n';
-
-//     }
-
-//     html +=
-//         '</tbody>\n</table>';
-
-//     return html;
-
-// }
-
-// // ─────────────────────────────────────────────────────────────
-// // Summary Table
-// // ─────────────────────────────────────────────────────────────
-
-// function summaryToHtmlTable(resultDict) {
-
-//     const rows = [];
-
-//     for (
-//         const [key, df]
-//         of Object.entries(resultDict)
-//     ) {
-
-//         if (key === 'Error Summary') {
-//             continue;
-//         }
-
-//         const count =
-//             Array.isArray(df)
-//                 ? df.length
-//                 : 0;
-
-//         rows.push({
-
-//             'Sheet Name': key,
-
-//             'Error Count': count
-
-//         });
-
-//     }
-
-//     return arrayToHtmlTable(rows);
-
-// }
-
-// // ─────────────────────────────────────────────────────────────
-// // HTML escaping
-// // ─────────────────────────────────────────────────────────────
-
-// function escapeHtml(str) {
-
-//     return String(str)
-
-//         .replace(
-//             /&/g,
-//             '&amp;'
-//         )
-
-//         .replace(
-//             /</g,
-//             '&lt;'
-//         )
-
-//         .replace(
-//             />/g,
-//             '&gt;'
-//         )
-
-//         .replace(
-//             /"/g,
-//             '&quot;'
-//         );
-
-// }
-
-// // ─────────────────────────────────────────────────────────────
-// // Health check
-// // ─────────────────────────────────────────────────────────────
-
-// app.get(
-//     '/health',
-//     (req, res) => {
-
-//         res.status(200).send('OK');
-
-//     }
-// );
-
-// // ─────────────────────────────────────────────────────────────
-// // Multer error handler
-// // ─────────────────────────────────────────────────────────────
-
-// app.use(
-//     (err, req, res, next) => {
-
-//         if (
-//             err instanceof multer.MulterError
-//         ) {
-
-//             if (
-//                 err.code === 'LIMIT_FILE_SIZE'
-//             ) {
-
-//                 return res.status(413).json({
-//                     error:
-//                         'File is too large. Maximum allowed size is 100 MB.'
-//                 });
-
-//             }
-
-//             return res.status(400).json({
-//                 error: err.message
-//             });
-
-//         }
-
-//         next(err);
-
-//     }
-// );
-
-// // ─────────────────────────────────────────────────────────────
-// // Start
-// // ─────────────────────────────────────────────────────────────
-
-// app.listen(
-//     PORT,
-//     '0.0.0.0',
-//     () => {
-
-//         console.log(
-//             `Server running on port ${PORT}`
-//         );
-
-//         console.log(
-//             `Node version: ${process.version}`
-//         );
-
-//         logMemory('Server startup');
-
-//     }
-// );
-
 /**
  * TDO Quality Analysis - Node.js/Express Server
  *
- * Optimized version:
- * - Large CSV support
- * - Memory monitoring
- * - Single processing job at a time
- * - Temporary Excel download
- * - Excel deleted after download
- * - Automatic cleanup of old Excel files
- * - Safe download filenames
- * - Multer upload limit
+ * New flow:
  *
- * Run:
- *   npm install
- *   npm start
+ * POST /upload
+ *      ↓
+ * Parse CSV
+ *      ↓
+ * processCSV()
+ *      ↓
+ * Store resultDict temporarily in memory
+ *      ↓
+ * Return JSON + job_id + download_url
  *
- * Visit:
- *   http://localhost:8080
+ * GET /download/:jobId
+ *      ↓
+ * Get resultDict
+ *      ↓
+ * Generate Excel
+ *      ↓
+ * Send Excel immediately
+ *      ↓
+ * Delete temporary Excel
+ *      ↓
+ * Delete job
  */
 
 'use strict';
@@ -789,14 +35,10 @@ const fs = require('fs');
 const Papa = require('papaparse');
 const os = require('os');
 const compression = require('compression');
+const crypto = require('crypto');
 
 const { processCSV } = require('./src/queries');
 const { createExcel } = require('./src/excel');
-
-
-// ============================================================
-// APP
-// ============================================================
 
 const app = express();
 
@@ -807,7 +49,7 @@ const PORT =
 
 
 // ============================================================
-// FOLDERS
+// TEMP FOLDER
 // ============================================================
 
 const UPLOAD_FOLDER =
@@ -874,14 +116,14 @@ const storage =
             cb
         ) => {
 
-            const safeName =
+            const originalName =
                 path.basename(
                     file.originalname
                 );
 
             cb(
                 null,
-                `${Date.now()}-${safeName}`
+                `${Date.now()}-${originalName}`
             );
 
         }
@@ -896,7 +138,7 @@ const upload =
 
         limits: {
 
-            // Maximum CSV upload size
+            // 100 MB
             fileSize:
                 100 * 1024 * 1024
 
@@ -906,14 +148,42 @@ const upload =
 
 
 // ============================================================
+// JOB STORAGE
+// ============================================================
+//
+// Stores processed validation results.
+//
+// Excel is NOT generated during upload.
+//
+// jobId -> {
+//     resultDict,
+//     createdAt,
+//     downloading
+// }
+//
+
+const jobs =
+    new Map();
+
+
+// Job expiry:
+//
+// If user does not download within 30 minutes,
+// remove the processed data from memory.
+
+const JOB_TTL =
+    30 * 60 * 1000;
+
+
+// ============================================================
 // PROCESSING LOCK
 // ============================================================
 //
-// Prevent multiple large files from being processed
-// simultaneously and consuming all Render memory.
+// Only one large CSV processing operation at a time.
 //
 
-let processing = false;
+let processing =
+    false;
 
 
 // ============================================================
@@ -925,12 +195,19 @@ function logMemory(label) {
     const memory =
         process.memoryUsage();
 
+
     console.log(
+
         `[MEMORY] ${label} | ` +
+
         `RSS: ${(memory.rss / 1024 / 1024).toFixed(2)} MB | ` +
+
         `Heap Used: ${(memory.heapUsed / 1024 / 1024).toFixed(2)} MB | ` +
+
         `Heap Total: ${(memory.heapTotal / 1024 / 1024).toFixed(2)} MB | ` +
+
         `External: ${(memory.external / 1024 / 1024).toFixed(2)} MB`
+
     );
 
 }
@@ -962,7 +239,7 @@ function safeDelete(filepath) {
     } catch (err) {
 
         console.error(
-            `Failed to delete file: ${filepath}`,
+            `Unable to delete ${filepath}:`,
             err.message
         );
 
@@ -972,13 +249,83 @@ function safeDelete(filepath) {
 
 
 // ============================================================
-// CLEAN OLD EXCEL FILES
+// CREATE JOB ID
 // ============================================================
-//
-// Excel files older than 30 minutes are deleted.
-//
 
-function cleanupOldExcelFiles() {
+function createJobId() {
+
+    return crypto
+        .randomBytes(16)
+        .toString('hex');
+
+}
+
+
+// ============================================================
+// CLEAN EXPIRED JOBS
+// ============================================================
+
+function cleanupExpiredJobs() {
+
+    const now =
+        Date.now();
+
+
+    for (
+        const [
+            jobId,
+            job
+        ]
+        of jobs.entries()
+    ) {
+
+        if (
+            job.downloading
+        ) {
+
+            continue;
+
+        }
+
+
+        if (
+            now - job.createdAt >
+            JOB_TTL
+        ) {
+
+            jobs.delete(
+                jobId
+            );
+
+
+            console.log(
+                `Expired job removed: ${jobId}`
+            );
+
+        }
+
+    }
+
+}
+
+
+// Run every 5 minutes
+
+const jobCleanupTimer =
+    setInterval(
+        cleanupExpiredJobs,
+        5 * 60 * 1000
+    );
+
+// Don't keep Node alive only for this timer.
+jobCleanupTimer.unref();
+
+
+// ============================================================
+// CLEAN OLD TEMP FILES
+// ============================================================
+
+function cleanupOldTempFiles() {
 
     try {
 
@@ -992,37 +339,35 @@ function cleanupOldExcelFiles() {
 
         }
 
+
         const files =
             fs.readdirSync(
                 UPLOAD_FOLDER
             );
 
+
         const now =
             Date.now();
 
+
+        // Delete abandoned temp files
+        // older than 30 minutes.
+
         const MAX_AGE =
             30 * 60 * 1000;
+
 
         for (
             const filename
             of files
         ) {
 
-            if (
-                !filename
-                    .toLowerCase()
-                    .endsWith('.xlsx')
-            ) {
-
-                continue;
-
-            }
-
             const filePath =
                 path.join(
                     UPLOAD_FOLDER,
                     filename
                 );
+
 
             try {
 
@@ -1031,12 +376,9 @@ function cleanupOldExcelFiles() {
                         filePath
                     );
 
-                const age =
-                    now -
-                    stat.mtimeMs;
 
                 if (
-                    age >
+                    now - stat.mtimeMs >
                     MAX_AGE
                 ) {
 
@@ -1049,7 +391,7 @@ function cleanupOldExcelFiles() {
             } catch (err) {
 
                 console.error(
-                    `Cleanup error for ${filename}:`,
+                    `Temp cleanup error for ${filename}:`,
                     err.message
                 );
 
@@ -1060,7 +402,7 @@ function cleanupOldExcelFiles() {
     } catch (err) {
 
         console.error(
-            'Excel cleanup error:',
+            'Temporary file cleanup error:',
             err.message
         );
 
@@ -1069,18 +411,17 @@ function cleanupOldExcelFiles() {
 }
 
 
-// Run cleanup every 10 minutes
-setInterval(
-    cleanupOldExcelFiles,
-    10 * 60 * 1000
-);
+const fileCleanupTimer =
+    setInterval(
+        cleanupOldTempFiles,
+        10 * 60 * 1000
+    );
 
-// Initial cleanup
-cleanupOldExcelFiles();
+fileCleanupTimer.unref();
 
 
 // ============================================================
-// GET /
+// HOME
 // ============================================================
 
 app.get(
@@ -1100,7 +441,7 @@ app.get(
 
 
 // ============================================================
-// POST /upload
+// UPLOAD
 // ============================================================
 
 app.post(
@@ -1109,16 +450,23 @@ app.post(
 
     async (req, res) => {
 
+        // ====================================================
+        // Check upload
+        // ====================================================
+
         if (!req.file) {
 
-            return res.status(400).json({
+            return res
+                .status(400)
+                .json({
 
-                error:
-                    'No file provided'
+                    error:
+                        'No file provided'
 
-            });
+                });
 
         }
+
 
         const filepath =
             req.file.path;
@@ -1134,20 +482,33 @@ app.post(
                 filepath
             );
 
-            return res.status(429).json({
 
-                error:
-                    'Another file is currently being processed. Please wait until it finishes and try again.'
+            return res
+                .status(429)
+                .json({
 
-            });
+                    error:
+                        'Another file is currently being processed. Please wait until it finishes and try again.'
+
+                });
 
         }
 
 
-        processing = true;
+        processing =
+            true;
 
 
         try {
+
+            console.log(
+                '========================================'
+            );
+
+            console.log(
+                'Starting CSV processing'
+            );
+
 
             logMemory(
                 'Upload received'
@@ -1164,8 +525,18 @@ app.post(
                     'utf8'
                 );
 
+
             console.log(
-                `CSV size: ${(Buffer.byteLength(csvText, 'utf8') / 1024 / 1024).toFixed(2)} MB`
+
+                `CSV size: ${(
+                    Buffer.byteLength(
+                        csvText,
+                        'utf8'
+                    ) /
+                    1024 /
+                    1024
+                ).toFixed(2)} MB`
+
             );
 
 
@@ -1182,8 +553,13 @@ app.post(
                 Papa.parse(
                     csvText,
                     {
-                        header: true,
-                        skipEmptyLines: true
+
+                        header:
+                            true,
+
+                        skipEmptyLines:
+                            true
+
                     }
                 );
 
@@ -1194,7 +570,7 @@ app.post(
             ) {
 
                 console.warn(
-                    `CSV parsing returned ${parsed.errors.length} errors`
+                    `CSV parsing returned ${parsed.errors.length} warning/error(s)`
                 );
 
             }
@@ -1235,33 +611,15 @@ app.post(
 
 
             // =================================================
-            // CREATE EXCEL
-            // =================================================
-
-            const excelFilename =
-                await createExcel(
-                    resultDict,
-                    UPLOAD_FOLDER
-                );
-
-
-            console.log(
-                `Excel created: ${excelFilename}`
-            );
-
-
-            logMemory(
-                'After createExcel'
-            );
-
-
-            // =================================================
             // BUILD HTML
             // =================================================
 
-            const detailedErrorsHtml = {};
+            const detailedErrorsHtml =
+                {};
 
-            const detailedErrorsCount = {};
+
+            const detailedErrorsCount =
+                {};
 
 
             for (
@@ -1324,6 +682,40 @@ app.post(
 
 
             // =================================================
+            // CREATE JOB
+            // =================================================
+
+            const jobId =
+                createJobId();
+
+
+            jobs.set(
+                jobId,
+                {
+
+                    resultDict,
+
+                    createdAt:
+                        Date.now(),
+
+                    downloading:
+                        false
+
+                }
+            );
+
+
+            console.log(
+                `Job created: ${jobId}`
+            );
+
+
+            console.log(
+                `Active jobs: ${jobs.size}`
+            );
+
+
+            // =================================================
             // DELETE ORIGINAL CSV
             // =================================================
 
@@ -1333,26 +725,18 @@ app.post(
 
 
             // =================================================
-            // EXCEL IS NOT DELETED
+            // IMPORTANT
             //
-            // It must remain available for /download
+            // NO EXCEL IS GENERATED HERE.
             // =================================================
 
 
-            const excelBasename =
-                path.basename(
-                    excelFilename
-                );
-
-
             const downloadUrl =
-                `/download/${encodeURIComponent(
-                    excelBasename
-                )}`;
+                `/download/${jobId}`;
 
 
             logMemory(
-                'Before response'
+                'Before JSON response'
             );
 
 
@@ -1371,11 +755,14 @@ app.post(
                 detailed_errors_count:
                     detailedErrorsCount,
 
-                excel_filename:
-                    excelBasename,
+                job_id:
+                    jobId,
 
                 download_url:
-                    downloadUrl
+                    downloadUrl,
+
+                excel_filename:
+                    null
 
             });
 
@@ -1388,7 +775,6 @@ app.post(
             );
 
 
-            // Delete uploaded CSV
             safeDelete(
                 filepath
             );
@@ -1401,34 +787,36 @@ app.post(
                 )
             ) {
 
-                return res.status(400).json({
+                return res
+                    .status(400)
+                    .json({
 
-                    error:
-                        err.message
+                        error:
+                            err.message
 
-                });
+                    });
 
             }
 
 
-            return res.status(500).json({
+            return res
+                .status(500)
+                .json({
 
-                error:
-                    `Processing error: ${err.message}`
+                    error:
+                        `Processing error: ${err.message}`
 
-            });
+                });
 
 
         } finally {
 
-            // =================================================
-            // RELEASE PROCESSING LOCK
-            // =================================================
+            processing =
+                false;
 
-            processing = false;
 
             logMemory(
-                'Request finished'
+                'Upload request finished'
             );
 
         }
@@ -1440,112 +828,222 @@ app.post(
 // ============================================================
 // DOWNLOAD EXCEL
 // ============================================================
+//
+// User clicks Download.
+//
+// Only NOW do we generate the Excel file.
+//
+// resultDict
+//     ↓
+// Streaming Excel
+//     ↓
+// temporary XLSX
+//     ↓
+// res.download()
+//     ↓
+// delete XLSX
+//     ↓
+// delete job
+//
 
 app.get(
-    '/download/:filename',
+    '/download/:jobId',
 
-    (req, res) => {
+    async (req, res) => {
 
-        try {
-
-            // =================================================
-            // Secure filename
-            // =================================================
-
-            const filename =
-                path.basename(
-                    decodeURIComponent(
-                        req.params.filename
-                    )
-                );
+        const jobId =
+            String(
+                req.params.jobId ||
+                ''
+            );
 
 
-            // Only allow XLSX files
-            if (
-                !filename
-                    .toLowerCase()
-                    .endsWith('.xlsx')
-            ) {
+        console.log(
+            '========================================'
+        );
 
-                return res.status(400).json({
+        console.log(
+            `Download requested for job: ${jobId}`
+        );
+
+
+        // ====================================================
+        // Validate ID
+        // ====================================================
+
+        if (
+            !/^[a-f0-9]{32}$/i.test(
+                jobId
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
 
                     error:
-                        'Invalid Excel filename.'
+                        'Invalid download request.'
 
                 });
 
-            }
+        }
 
 
-            const filePath =
-                path.join(
-                    UPLOAD_FOLDER,
-                    filename
-                );
+        // ====================================================
+        // Find job
+        // ====================================================
+
+        const job =
+            jobs.get(
+                jobId
+            );
 
 
-            console.log(
-                `Download requested: ${filePath}`
+        if (!job) {
+
+            console.error(
+                `Job not found: ${jobId}`
+            );
+
+
+            return res
+                .status(404)
+                .json({
+
+                    error:
+                        'The report is no longer available. Please upload the CSV again.'
+
+                });
+
+        }
+
+
+        // ====================================================
+        // Prevent duplicate download generation
+        // ====================================================
+
+        if (
+            job.downloading
+        ) {
+
+            return res
+                .status(409)
+                .json({
+
+                    error:
+                        'The Excel report is already being generated. Please wait.'
+
+                });
+
+        }
+
+
+        job.downloading =
+            true;
+
+
+        let excelFilepath =
+            null;
+
+
+        try {
+
+            logMemory(
+                'Before Excel generation'
             );
 
 
             // =================================================
-            // Check file
+            // GENERATE EXCEL
+            // =================================================
+
+            excelFilepath =
+                await createExcel(
+                    job.resultDict,
+                    UPLOAD_FOLDER
+                );
+
+
+            console.log(
+                `Excel generated: ${excelFilepath}`
+            );
+
+
+            logMemory(
+                'After Excel generation'
+            );
+
+
+            // =================================================
+            // VERIFY FILE
             // =================================================
 
             if (
                 !fs.existsSync(
-                    filePath
+                    excelFilepath
                 )
             ) {
 
-                console.error(
-                    `Excel file not found: ${filePath}`
+                throw new Error(
+                    'Excel file was not created.'
                 );
-
-
-                return res.status(404).json({
-
-                    error:
-                        'Excel report is no longer available. Please upload the CSV again.'
-
-                });
 
             }
 
 
-            // =================================================
-            // File information
-            // =================================================
+            const filename =
+                path.basename(
+                    excelFilepath
+                );
+
 
             const stat =
                 fs.statSync(
-                    filePath
+                    excelFilepath
                 );
 
 
             console.log(
-                `Sending Excel: ${filename} ` +
-                `(${(stat.size / 1024 / 1024).toFixed(2)} MB)`
+
+                `Sending Excel: ${filename} | ` +
+                `${(
+                    stat.size /
+                    1024 /
+                    1024
+                ).toFixed(2)} MB`
+
             );
 
 
             // =================================================
-            // Download
+            // SEND FILE
             // =================================================
 
-            res.download(
-                filePath,
+            return res.download(
+
+                excelFilepath,
+
                 filename,
 
-                (err) => {
+                err => {
 
                     if (err) {
 
                         console.error(
-                            `Download error for ${filename}:`,
+                            'Excel download error:',
                             err.message
                         );
+
+
+                        // Allow retry if the HTTP download failed.
+                        job.downloading =
+                            false;
+
+
+                        safeDelete(
+                            excelFilepath
+                        );
+
 
                         return;
 
@@ -1553,47 +1051,84 @@ app.get(
 
 
                     console.log(
-                        `Download completed: ${filename}`
+                        `Excel download completed: ${filename}`
                     );
 
 
-                    // =================================================
-                    // Delete after successful download
-                    // =================================================
+                    // =========================================
+                    // Delete temporary XLSX
+                    // =========================================
 
-                    setTimeout(
-                        () => {
+                    safeDelete(
+                        excelFilepath
+                    );
 
-                            safeDelete(
-                                filePath
-                            );
 
-                        },
-                        5000
+                    // =========================================
+                    // Delete processed job
+                    //
+                    // Report was downloaded successfully.
+                    // =========================================
+
+                    jobs.delete(
+                        jobId
+                    );
+
+
+                    console.log(
+                        `Job removed: ${jobId}`
+                    );
+
+
+                    console.log(
+                        `Active jobs: ${jobs.size}`
+                    );
+
+
+                    logMemory(
+                        'After Excel download cleanup'
                     );
 
                 }
+
             );
 
 
         } catch (err) {
 
             console.error(
-                'Download route error:',
+                'Excel generation error:',
                 err
             );
+
+
+            job.downloading =
+                false;
+
+
+            if (
+                excelFilepath
+            ) {
+
+                safeDelete(
+                    excelFilepath
+                );
+
+            }
 
 
             if (
                 !res.headersSent
             ) {
 
-                return res.status(500).json({
+                return res
+                    .status(500)
+                    .json({
 
-                    error:
-                        'Unable to download the Excel report.'
+                        error:
+                            `Unable to generate Excel report: ${err.message}`
 
-                });
+                    });
 
             }
 
@@ -1607,7 +1142,9 @@ app.get(
 // HTML TABLE
 // ============================================================
 
-function arrayToHtmlTable(rows) {
+function arrayToHtmlTable(
+    rows
+) {
 
     if (
         !rows ||
@@ -1630,21 +1167,30 @@ function arrayToHtmlTable(rows) {
 
 
     let html =
+
         '<table border="1" class="dataframe">\n' +
+
         '<thead><tr>';
 
 
     html +=
+
         headers
+
             .map(
+
                 h =>
                     `<th>${escapeHtml(h)}</th>`
+
             )
+
             .join('');
 
 
     html +=
+
         '</tr></thead>\n' +
+
         '<tbody>\n';
 
 
@@ -1658,15 +1204,20 @@ function arrayToHtmlTable(rows) {
 
 
         html +=
+
             headers
+
                 .map(
+
                     h =>
                         `<td>${escapeHtml(
                             String(
                                 row[h] ?? ''
                             )
                         )}</td>`
+
                 )
+
                 .join('');
 
 
@@ -1677,7 +1228,9 @@ function arrayToHtmlTable(rows) {
 
 
     html +=
+
         '</tbody>\n' +
+
         '</table>';
 
 
@@ -1694,7 +1247,8 @@ function summaryToHtmlTable(
     resultDict
 ) {
 
-    const rows = [];
+    const rows =
+        [];
 
 
     for (
@@ -1717,19 +1271,15 @@ function summaryToHtmlTable(
         }
 
 
-        const count =
-            Array.isArray(df)
-                ? df.length
-                : 0;
-
-
         rows.push({
 
             'Sheet Name':
                 key,
 
             'Error Count':
-                count
+                Array.isArray(df)
+                    ? df.length
+                    : 0
 
         });
 
@@ -1747,7 +1297,9 @@ function summaryToHtmlTable(
 // ESCAPE HTML
 // ============================================================
 
-function escapeHtml(str) {
+function escapeHtml(
+    str
+) {
 
     return String(str)
 
@@ -1780,16 +1332,19 @@ function escapeHtml(str) {
 
 
 // ============================================================
-// HEALTH
+// HEALTH CHECK
 // ============================================================
 
 app.get(
     '/health',
+
     (req, res) => {
 
-        res.status(200).send(
-            'OK'
-        );
+        res
+            .status(200)
+            .send(
+                'OK'
+            );
 
     }
 );
@@ -1817,33 +1372,33 @@ app.use(
                 'LIMIT_FILE_SIZE'
             ) {
 
-                return res.status(413).json({
+                return res
+                    .status(413)
+                    .json({
 
-                    error:
-                        'File is too large. Maximum allowed size is 100 MB.'
+                        error:
+                            'File is too large. Maximum allowed size is 100 MB.'
 
-                });
+                    });
 
             }
 
 
-            return res.status(400).json({
+            return res
+                .status(400)
+                .json({
 
-                error:
-                    err.message
+                    error:
+                        err.message
 
-            });
+                });
 
         }
 
 
-        console.error(
-            'Unhandled error:',
+        next(
             err
         );
-
-
-        next(err);
 
     }
 );
@@ -1863,13 +1418,16 @@ app.listen(
             `Server running on port ${PORT}`
         );
 
+
         console.log(
             `Node version: ${process.version}`
         );
 
+
         console.log(
             `Upload folder: ${UPLOAD_FOLDER}`
         );
+
 
         logMemory(
             'Server startup'

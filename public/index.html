@@ -499,7 +499,7 @@ document.addEventListener('keydown', (e) => {
         const backBtn = document.getElementById('back-btn');
         const searchBox = document.getElementById('search-box'); 
         const footer = document.getElementById('main-footer');
-        let excelFilename = '';
+        let downloadUrl = '';
 
         if (form) {
             form.addEventListener('submit', (event) => {
@@ -559,7 +559,7 @@ document.addEventListener('keydown', (e) => {
                             summaryTableBody.appendChild(row);
                         }
 
-                        excelFilename = result.excel_filename;
+                        downloadUrl = result.download_url;
 
                         const categories = document.querySelectorAll('.expandable');
                         let lastSelectedCategory = null;
@@ -607,8 +607,15 @@ document.addEventListener('keydown', (e) => {
             detailedErrorSection.classList.remove('large');
         });
 
-        document.getElementById('download-btn').addEventListener('click', () => {
-            window.open(`/download/${encodeURIComponent(excelFilename)}`, '_blank');
+            document.getElementById('download-btn').addEventListener('click', () => {
+
+            if (!downloadUrl) {
+                alert('Download is not available. Please upload the CSV again.');
+                return;
+            }
+
+            window.open(downloadUrl, '_blank');
+
         });
 
         function searchErrors() {
